@@ -104,7 +104,76 @@ obsidian daily:path 2>&1 | grep -v "Loading\|out of date\|installer"
 ```
 3. Write the complete content to that path.
 
-### 6. Extract fleeting notes
+### 6. Fetch and save linked articles
+
+Scan the daily note for URLs (http:// or https:// links). For each URL that looks like an article or blog post (skip obvious non-article URLs like Google Docs, GitHub repos, shopping product pages, or internal tools):
+
+**Step 1: Extract the article text**
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+readable -p title,excerpt,byline,text-content -q "THE_URL" 2>&1 | grep -v "Warning:"
+```
+
+If this fails or returns empty/very short content (likely a paywall), try via archive.today:
+```bash
+readable -p title,excerpt,byline,text-content -q "https://archive.ph/newest/THE_URL" 2>&1 | grep -v "Warning:"
+```
+
+If both fail, note it in the processed section as a link that couldn't be fetched.
+
+**Step 2: Create a Literature Note**
+
+For each successfully fetched article, create a note in `50 Resources/`:
+```bash
+obsidian create name="@ Author - Article Title" path="50 Resources/" 2>&1 | grep -v "Loading\|out of date\|installer"
+```
+
+If author is unknown, use the publication name. If both unknown, use just the title.
+
+Then write the content:
+```
+---
+type: literature
+created: [ISO timestamp]
+source: "THE_URL"
+author: "[author if available]"
+tags: []
+status: unread
+---
+# [Article Title]
+
+## Summary
+[2-3 sentence summary of the article]
+
+## Key Ideas
+- [3-5 bullet points capturing the main arguments/insights]
+
+## Full Text
+[The complete article text as extracted by readable]
+
+## Connections
+- Related to [[existing notes if obvious]]
+```
+
+Use `obsidian append file="Note Name" content="..."` to write it.
+
+**Step 3: Link from the processed section**
+
+In the References section of the processed daily note, replace the raw URL with a link to the new Literature Note:
+```
+- [[@ Author - Article Title]] — [one-line description of what the article is about]
+```
+
+**Rules for article fetching:**
+- Skip Google Docs, Sheets, Slides links (these are private/collaborative docs, not articles)
+- Skip GitHub links (code repos, not articles — unless it's a blog post on github.io)
+- Skip shopping/product links (Steelcase chairs, Amazon, etc.) — leave these as raw URLs in References
+- Skip image URLs, PDF links, and video links
+- If the article is very long (>5000 words), still save the full text but note the word count in the summary
+- Tag articles with relevant topic tags based on their content
+
+### 7. Extract fleeting notes
 
 If any idea in the dump is substantial enough to deserve its own note, create it:
 ```bash
@@ -118,7 +187,7 @@ obsidian append file="Descriptive Title" content="---\ntype: fleeting\ncreated: 
 
 Add a link to the extracted note in the processed section.
 
-### 7. Update frontmatter
+### 8. Update frontmatter
 
 ```bash
 obsidian properties:set file="10 Daily/YYYY-MM-DD" processed=true type=checkbox 2>&1 | grep -v "Loading\|out of date\|installer"

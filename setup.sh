@@ -200,6 +200,28 @@ else
   fi
 fi
 
+# --- readability-cli (for article fetching) ---
+
+if command -v readable &>/dev/null || [[ -x "$HOME/.local/bin/readable" ]]; then
+  success "readability-cli found"
+else
+  warn "readability-cli not found (used for fetching article text from URLs)."
+  if confirm "Install readability-cli?"; then
+    if command -v npm &>/dev/null; then
+      info "Installing readability-cli..."
+      npm install -g readability-cli --prefix "$HOME/.local" 2>/dev/null
+      if [[ -x "$HOME/.local/bin/readable" ]]; then
+        success "readability-cli installed to $HOME/.local/bin/readable"
+        warn "Make sure $HOME/.local/bin is in your PATH"
+      else
+        error "Installation may have failed. Try manually: npm install -g readability-cli --prefix \"\$HOME/.local\""
+      fi
+    else
+      error "npm not found. Install Node.js first, then run: npm install -g readability-cli --prefix \"\$HOME/.local\""
+    fi
+  fi
+fi
+
 echo ""
 
 # --- Step 3: Create folder structure ---

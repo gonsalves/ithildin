@@ -11,6 +11,7 @@ A complete second brain system built on Obsidian + Claude. Capture everything, l
 - **12-folder vault structure** based on PARA methodology
 - **7 templates** for daily notes, fleeting ideas, literature notes, meetings, projects, permanent notes, and weekly reviews
 - **Automated daily note processing** — dump unstructured text all day, Claude structures it at 9 PM
+- **Article fetching** — URLs in your daily notes are automatically fetched, summarised, and saved as Literature Notes (with archive.today fallback for paywalls)
 - **Morning intelligence digest** — Claude surfaces connections between notes and identifies knowledge gaps at 6 AM
 - **CLAUDE.md** — teaches Claude Code how to work with your vault
 
@@ -23,6 +24,7 @@ The setup script will check for and offer to install:
 - **[Obsidian](https://obsidian.md)** (via Homebrew or direct download)
 - **[Claude Code](https://claude.ai/code)** (via Homebrew or npm)
 - **jq** (via Homebrew, for config merging)
+- **readability-cli** (via npm, for fetching article text from URLs)
 
 ## Quick Start
 
@@ -74,7 +76,7 @@ Two Claude Code tasks power the AI layer:
 
 | Task | Schedule | What it does |
 |---|---|---|
-| `process-daily-note` | 9 PM daily | Structures your raw daily dump, extracts tasks, links notes, asks questions |
+| `process-daily-note` | 9 PM daily | Structures your raw daily dump, extracts tasks, links notes, fetches linked articles, asks questions |
 | `morning-brain-digest` | 6 AM daily | Generates a digest, surfaces connections, identifies knowledge gaps |
 
 Activate them in Claude Code:
