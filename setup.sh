@@ -78,39 +78,126 @@ echo ""
 info "Vault path: $VAULT_PATH"
 echo ""
 
-# --- Step 2: Check prerequisites ---
+# --- Step 2: Check and install prerequisites ---
 
-PREREQS_OK=true
+# Find Homebrew (may not be in PATH in non-interactive shells)
+find_brew() {
+  if command -v brew &>/dev/null; then
+    echo "brew"
+  elif [[ -x /opt/homebrew/bin/brew ]]; then
+    echo "/opt/homebrew/bin/brew"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    echo "/usr/local/bin/brew"
+  else
+    echo ""
+  fi
+}
 
+BREW="$(find_brew)"
+
+install_with_brew() {
+  local formula="$1"
+  local is_cask="${2:-false}"
+  if [[ -z "$BREW" ]]; then
+    return 1
+  fi
+  if [[ "$is_cask" == "true" ]]; then
+    $BREW install --cask "$formula"
+  else
+    $BREW install "$formula"
+  fi
+}
+
+if [[ "$(uname)" != "Darwin" ]]; then
+  warn "This script is designed for macOS. Some features may differ on other platforms."
+fi
+
+# --- Obsidian ---
+
+if [[ -d "/Applications/Obsidian.app" ]]; then
+  success "Obsidian installed"
+else
+  warn "Obsidian is not installed."
+  if confirm "Install Obsidian?"; then
+    if [[ -n "$BREW" ]]; then
+      info "Installing Obsidian via Homebrew..."
+      install_with_brew obsidian true
+      success "Obsidian installed"
+    else
+      info "Downloading Obsidian..."
+      DMG_PATH="/tmp/Obsidian.dmg"
+      curl -fsSL -o "$DMG_PATH" "https://github.com/obsidianmd/obsidian-releases/releases/latest/download/Obsidian-universal.dmg"
+      info "Mounting disk image..."
+      MOUNT_POINT="$(hdiutil attach "$DMG_PATH" -nobrowse -quiet | tail -1 | awk '{print $3}')"
+      info "Installing to /Applications..."
+      cp -R "$MOUNT_POINT/Obsidian.app" /Applications/
+      hdiutil detach "$MOUNT_POINT" -quiet
+      rm -f "$DMG_PATH"
+      success "Obsidian installed to /Applications"
+    fi
+    echo ""
+    warn "IMPORTANT: Open Obsidian once, then enable the CLI:"
+    warn "  Settings > General > Enable Command Line Interface"
+    echo ""
+  fi
+fi
+
+# --- Obsidian CLI ---
+
+OBSIDIAN_CLI_OK=false
 if command -v obsidian &>/dev/null; then
   success "Obsidian CLI found"
-else
-  warn "Obsidian CLI not found in PATH"
+  OBSIDIAN_CLI_OK=true
+elif [[ -x "/Applications/Obsidian.app/Contents/MacOS/obsidian" ]]; then
+  warn "Obsidian is installed but CLI is not in PATH."
   warn "Enable it: Obsidian > Settings > General > Enable Command Line Interface"
-  warn "The system will still be set up, but scheduled tasks need the CLI to work."
-  PREREQS_OK=false
+  warn "Or add to your shell profile: export PATH=\"\$PATH:/Applications/Obsidian.app/Contents/MacOS\""
+else
+  warn "Obsidian CLI not available. Scheduled tasks need it to work."
 fi
+
+# --- Claude Code ---
 
 if command -v claude &>/dev/null; then
   success "Claude Code found"
 else
-  warn "Claude Code not found in PATH"
-  warn "Install it: https://claude.ai/code"
-  warn "Scheduled tasks require Claude Code to run."
-  PREREQS_OK=false
+  warn "Claude Code not found."
+  if confirm "Install Claude Code?"; then
+    if [[ -n "$BREW" ]]; then
+      info "Installing Claude Code via Homebrew..."
+      install_with_brew claude-code true
+      success "Claude Code installed"
+    else
+      info "Installing Claude Code via npm..."
+      if command -v npm &>/dev/null; then
+        npm install -g @anthropic-ai/claude-code
+        success "Claude Code installed"
+      else
+        error "Neither Homebrew nor npm found. Install Claude Code manually:"
+        error "  https://claude.ai/code"
+      fi
+    fi
+    echo ""
+    warn "Run 'claude' once to authenticate with your Anthropic API key."
+    echo ""
+  fi
 fi
+
+# --- jq ---
 
 HAS_JQ=false
 if command -v jq &>/dev/null; then
   success "jq found"
   HAS_JQ=true
 else
-  warn "jq not found. Config merging will use a simple copy instead."
-  warn "For smarter config merging, install jq: brew install jq"
-fi
-
-if [[ "$(uname)" != "Darwin" ]]; then
-  warn "This script is designed for macOS. Some features may differ on other platforms."
+  if [[ -n "$BREW" ]]; then
+    info "Installing jq for config merging..."
+    install_with_brew jq
+    success "jq installed"
+    HAS_JQ=true
+  else
+    warn "jq not found and no Homebrew. Config merging will use simple copy instead."
+  fi
 fi
 
 echo ""

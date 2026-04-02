@@ -17,9 +17,12 @@ A complete second brain system built on Obsidian + Claude. Capture everything, l
 ## Prerequisites
 
 - **macOS** (Linux/Windows support planned)
-- **[Obsidian](https://obsidian.md)** v1.12+ with [CLI enabled](https://obsidian.md/help/cli)
-- **[Claude Code](https://claude.ai/code)** installed and configured with an Anthropic API key
-- **jq** (optional, for smart config merging) — `brew install jq`
+- An **Anthropic API key** for Claude Code
+
+The setup script will check for and offer to install:
+- **[Obsidian](https://obsidian.md)** (via Homebrew or direct download)
+- **[Claude Code](https://claude.ai/code)** (via Homebrew or npm)
+- **jq** (via Homebrew, for config merging)
 
 ## Quick Start
 
