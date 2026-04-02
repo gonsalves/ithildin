@@ -31,7 +31,7 @@ The setup script will check for and offer to install:
 ```bash
 git clone https://github.com/gonsalves/ithildin.git
 cd ithildin
-./setup.sh ~/path/to/your/vault
+./setup.sh ~/Documents/Obsidian\ Vault
 ```
 
 The setup script will:
