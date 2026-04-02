@@ -1,25 +1,27 @@
 ---
-name: process-daily-note
-description: Process the user's unstructured daily note — structure it, link to existing notes, ask clarifying questions, and extract fleeting notes.
+name: process-and-digest
+description: Process the daily note and generate morning digest — structures raw capture, fetches articles, surfaces connections and gaps.
 ---
 
-You are processing today's daily note using the Obsidian CLI. The CLI command is `obsidian` and is already in PATH.
+You are processing today's daily note and then generating a vault digest. This task runs twice daily (6 AM and 9 PM). Use the Obsidian CLI (`obsidian` command, already in PATH).
 
-IMPORTANT: The CLI may output warning lines about the installer being out of date. Always filter these out — they are not part of the actual output. Pipe through `grep -v "Loading\|out of date\|installer"` or similar.
+IMPORTANT: The CLI may output warning lines about the installer being out of date. Always filter these out — pipe through `grep -v "Loading\|out of date\|installer"` or similar.
 
-## Steps
+---
 
-### 1. Check if there's anything to process
+# Part 1: Process Daily Note
+
+## 1. Check if there's anything to process
 
 Run:
 ```bash
 obsidian daily:read 2>&1 | grep -v "Loading\|out of date\|installer"
 ```
 
-- If the output is empty or only contains frontmatter with no content below the heading, stop here — nothing to process.
-- If frontmatter contains `processed: true`, stop — already done.
+- If the output is empty or only contains frontmatter with no content below the heading, skip to Part 2.
+- If frontmatter contains `processed: true`, skip to Part 2.
 
-### 2. Gather vault context
+## 2. Gather vault context
 
 Run these to understand what's in the vault:
 ```bash
@@ -33,7 +35,7 @@ obsidian folders format=tree 2>&1 | grep -v "Loading\|out of date\|installer"
 obsidian files format=json 2>&1 | grep -v "Loading\|out of date\|installer"
 ```
 
-### 3. Read the daily note content
+## 3. Read the daily note content
 
 ```bash
 obsidian daily:read 2>&1 | grep -v "Loading\|out of date\|installer"
@@ -41,7 +43,7 @@ obsidian daily:read 2>&1 | grep -v "Loading\|out of date\|installer"
 
 Save the full raw content — you'll need it to preserve the original text.
 
-### 4. Find related notes
+## 4. Find related notes
 
 Based on names, topics, and keywords in the daily note, search for related vault content:
 ```bash
@@ -58,7 +60,7 @@ For any matching notes that seem highly relevant, read their content:
 obsidian read file="Note Name" 2>&1 | grep -v "Loading\|out of date\|installer"
 ```
 
-### 5. Write the processed version
+## 5. Write the processed version
 
 Construct the processed daily note. The format is:
 
@@ -104,7 +106,7 @@ obsidian daily:path 2>&1 | grep -v "Loading\|out of date\|installer"
 ```
 3. Write the complete content to that path.
 
-### 6. Process linked URLs
+## 6. Process linked URLs
 
 Scan the daily note for URLs (http:// or https:// links). Classify each URL, then process accordingly.
 
@@ -127,7 +129,7 @@ When ambiguous, default to **Article** (lighter processing, safer).
 
 ---
 
-#### 6a. Article flow
+### 6a. Article flow
 
 For URLs classified as articles:
 
@@ -183,7 +185,7 @@ status: unread
 
 ---
 
-#### 6b. Product flow
+### 6b. Product flow
 
 For URLs classified as products:
 
@@ -302,7 +304,7 @@ In the References section of the processed daily note:
 - Don't create separate notes for the alternatives — just list them in the table. If the user later wants to evaluate one, they'll add it to a daily note themselves
 - Tag with `product` plus a relevant `#topic/*` tag (e.g. `#topic/office-setup`, `#topic/audio`)
 
-### 7. Extract fleeting notes
+## 7. Extract fleeting notes
 
 If any idea in the dump is substantial enough to deserve its own note, create it:
 ```bash
@@ -316,16 +318,156 @@ obsidian append file="Descriptive Title" content="---\ntype: fleeting\ncreated: 
 
 Add a link to the extracted note in the processed section.
 
-### 8. Update frontmatter
+## 8. Update frontmatter
 
 ```bash
 obsidian properties:set file="10 Daily/YYYY-MM-DD" processed=true type=checkbox 2>&1 | grep -v "Loading\|out of date\|installer"
 ```
 
-## Rules
-- NEVER modify the original raw text above the divider.
-- Be concise in the processed section — this is structure, not a rewrite.
+---
+
+# Part 2: Vault Digest
+
+## 1. Gather context
+
+Run all of these:
+```bash
+# What changed recently (last 24-48 hours)
+obsidian search query="[processed:true]" format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+
+# Read yesterday's and today's daily notes
+obsidian daily:read 2>&1 | grep -v "Loading\|out of date\|installer"
+obsidian read file="10 Daily/[YESTERDAY'S DATE]" 2>&1 | grep -v "Loading\|out of date\|installer"
+
+# Get the full file list and tags
+obsidian files format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+obsidian tags sort=count 2>&1 | grep -v "Loading\|out of date\|installer"
+
+# Check what's in the inbox
+obsidian files folder="00 Inbox" format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+
+# Read inbox items
+# For each file in inbox, read it:
+obsidian read file="[filename]" 2>&1 | grep -v "Loading\|out of date\|installer"
+
+# Find seed/growing notes
+obsidian search query="[tag:status/seed]" format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+obsidian search query="[tag:status/growing]" format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+
+# Read a sampling of permanent notes for broader awareness (up to 20)
+obsidian search query="[type:permanent]" format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+
+# Find orphan notes and unresolved links
+obsidian orphans 2>&1 | grep -v "Loading\|out of date\|installer"
+obsidian unresolved 2>&1 | grep -v "Loading\|out of date\|installer"
+
+# Check previous Claude outputs to avoid repetition
+obsidian files folder="80 Claude/Digests" format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+obsidian files folder="80 Claude/Connections" format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+obsidian files folder="80 Claude/Gaps" format=json 2>&1 | grep -v "Loading\|out of date\|installer"
+```
+
+Read the most recent Claude outputs (last 2-3 days) to avoid repeating the same insights.
+
+## 2. Read relevant notes in full
+
+Based on the context gathered, read the full content of:
+- All inbox items
+- Recent daily notes (last 3 days)
+- Any seed/growing notes
+- Notes that seem relevant to recent activity
+Use `obsidian read file="Note Name"` for each.
+
+## 3. Generate three output files
+
+### File 1: Daily Digest
+```bash
+obsidian create name="Claude Digest [TODAY'S DATE]" path="80 Claude/Digests/" 2>&1 | grep -v "Loading\|out of date\|installer"
+```
+
+Write content:
+```markdown
+---
+type: claude
+subtype: digest
+created: [ISO timestamp]
+tags: [claude, digest]
+---
+# Daily Digest — [Today's date, spelled out]
+
+## What Was Captured Yesterday
+- Brief summary of new/modified notes
+
+## Open Threads
+- Topics or tasks that appear unfinished
+- Link to relevant notes with [[wikilinks]]
+
+## Suggested Next Actions
+1. 3-5 concrete things to consider doing today
+2. Based on recent activity, inbox items, open tasks
+
+## On Your Radar
+- Upcoming dates, deadlines, follow-ups from recent notes
+```
+
+### File 2: Connections
+```bash
+obsidian create name="Connections [TODAY'S DATE]" path="80 Claude/Connections/" 2>&1 | grep -v "Loading\|out of date\|installer"
+```
+
+Write content:
+```markdown
+---
+type: claude
+subtype: connections
+created: [ISO timestamp]
+tags: [claude, connections]
+---
+# Connections — [Today's date]
+
+Identify 3-5 non-obvious connections between notes that are NOT already linked.
+
+For each:
+### [[Note A]] <-> [[Note B]]
+Why these connect: [explanation]
+Suggested action: [create a link, merge, create a MOC, etc.]
+
+Prioritise cross-domain connections (e.g., a design philosophy note connecting to a personal reflection). These are the most valuable.
+```
+
+### File 3: Gaps
+```bash
+obsidian create name="Gaps [TODAY'S DATE]" path="80 Claude/Gaps/" 2>&1 | grep -v "Loading\|out of date\|installer"
+```
+
+Write content:
+```markdown
+---
+type: claude
+subtype: gaps
+created: [ISO timestamp]
+tags: [claude, gaps]
+---
+# Knowledge Gaps — [Today's date]
+
+Topics being circled but not written about directly.
+
+For each (3-5 max):
+### [Topic Name]
+- **Evidence:** [[Note 1]], [[Note 2]], [[Note 3]] all reference this
+- **What's missing:** A dedicated note that [describes what it would contain]
+- **Suggested title:** "Title of the note to create"
+```
+
+Use `obsidian append file="Note Name" content="..."` to write the content to each created file.
+
+## Rules (both parts)
+- NEVER modify the original raw text above the divider (Part 1).
+- Never modify existing notes. Only create new files in 80 Claude/ (Part 2).
+- Be concise — structure, not a rewrite.
 - Use [[wikilinks]] liberally to connect to existing vault content.
-- If there's very little content (a line or two), keep processing light.
+- If there's very little content, keep processing light. Don't generate filler.
+- Check previous Claude outputs and avoid repeating the same connections/gaps.
+- Use `obsidian backlinks` and `obsidian links` to understand the existing link graph before suggesting new connections.
 - When in doubt about extracting a fleeting note, ask in Questions rather than creating one.
 - Always check for existing notes before creating wikilinks — use `obsidian search` to verify.

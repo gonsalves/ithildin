@@ -10,9 +10,8 @@ A complete second brain system built on Obsidian + Claude. Capture everything, l
 
 - **12-folder vault structure** based on PARA methodology
 - **7 templates** for daily notes, fleeting ideas, literature notes, meetings, projects, permanent notes, and weekly reviews
-- **Automated daily note processing** — dump unstructured text all day, Claude structures it at 9 PM
+- **Automated processing + digest** — dump unstructured text all day, Claude structures it and surfaces connections twice daily (6 AM and 9 PM)
 - **Article fetching** — URLs in your daily notes are automatically fetched, summarised, and saved as Literature Notes (with archive.today fallback for paywalls)
-- **Morning intelligence digest** — Claude surfaces connections between notes and identifies knowledge gaps at 6 AM
 - **CLAUDE.md** — teaches Claude Code how to work with your vault
 
 ## Prerequisites
@@ -70,22 +69,20 @@ After installing Templater, set:
 - Template folder location: `Templates`
 - Trigger Templater on new file creation: **ON**
 
-## Scheduled Tasks
+## Scheduled Task
 
-Two Claude Code tasks power the AI layer:
+One Claude Code task powers the AI layer, running twice daily:
 
 | Task | Schedule | What it does |
 |---|---|---|
-| `process-daily-note` | 9 PM daily | Structures your raw daily dump, extracts tasks, links notes, fetches linked articles, asks questions |
-| `morning-brain-digest` | 6 AM daily | Generates a digest, surfaces connections, identifies knowledge gaps |
+| `process-and-digest` | 6 AM + 9 PM daily | Structures your raw daily dump, extracts tasks, links notes, fetches linked articles, then generates a digest, surfaces connections, and identifies knowledge gaps |
 
-Activate them in Claude Code:
+Activate it in Claude Code:
 ```
-/schedule process-daily-note --cron '0 21 * * *'
-/schedule morning-brain-digest --cron '0 6 * * *'
+/schedule process-and-digest --cron '0 6,21 * * *'
 ```
 
-Both tasks require Obsidian to be running (for CLI access).
+Requires Obsidian to be running (for CLI access).
 
 ## Customisation
 
@@ -101,13 +98,10 @@ Both tasks require Obsidian to be running (for CLI access).
 You write messy daily notes
          |
          v
-Claude (9 PM) structures them, links to existing notes, asks questions
+Claude (6 AM + 9 PM) structures them, links notes, then surfaces connections and gaps
          |
          v
-Claude (6 AM) reads the vault, finds connections, spots gaps
-         |
-         v
-You (morning) review digest, answer questions, process inbox
+You review digest, answer questions, process inbox
          |
          v
 You (weekly) reflect, develop notes, archive completed work
@@ -126,8 +120,7 @@ ithildin/
 │   ├── templates/         # 7 Obsidian note templates
 │   └── obsidian-config/   # Obsidian settings files
 ├── tasks/
-│   ├── process-daily-note.md    # Evening processing task
-│   └── morning-brain-digest.md  # Morning digest task
+│   └── process-and-digest.md    # Combined processing + digest task
 └── shortcuts/             # Future: Apple Shortcuts
 ```
 

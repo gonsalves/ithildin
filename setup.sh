@@ -8,7 +8,7 @@ set -euo pipefail
 #   - Folder structure (PARA-lite, 12 top-level folders)
 #   - Templates (7 note types)
 #   - Obsidian config (default locations, daily notes)
-#   - Claude Code scheduled tasks (daily processing + morning digest)
+#   - Claude Code scheduled task (process + digest, runs twice daily)
 #   - CLAUDE.md for vault-aware AI assistance
 #
 # Usage: ./setup.sh [vault-path]
@@ -202,7 +202,7 @@ fi
 
 # --- readability-cli (for article fetching) ---
 
-if command -v readable &>/dev/null || [[ -x "$HOME/.local/bin/readable" ]]; then
+if command -v readable &>/dev/null || [[ -x "$HOME/.local/bin/readable" ]] || [[ -x "$HOME/.npm-global/bin/readable" ]]; then
   success "readability-cli found"
 else
   warn "readability-cli not found (used for fetching article text from URLs)."
@@ -430,8 +430,7 @@ install_task() {
   fi
 }
 
-install_task "process-daily-note"
-install_task "morning-brain-digest"
+install_task "process-and-digest"
 
 # --- Step 8: Summary ---
 
@@ -455,13 +454,12 @@ echo "3. Configure Templater:"
 echo "   Settings > Templater > Template folder location: Templates"
 echo "   Settings > Templater > Trigger Templater on new file creation: ON"
 echo ""
-echo "4. Activate the scheduled Claude Code tasks:"
+echo "4. Activate the scheduled Claude Code task:"
 echo "   Open Claude Code and run:"
-echo "     /schedule process-daily-note --cron '0 21 * * *'"
-echo "     /schedule morning-brain-digest --cron '0 6 * * *'"
+echo "     /schedule process-and-digest --cron '0 6,21 * * *'"
 echo ""
 echo "5. Start capturing! Open today's daily note and dump whatever's on your mind."
-echo "   Claude will structure it at 9 PM and deliver a digest at 6 AM."
+echo "   Claude will process and digest your notes at 6 AM and 9 PM."
 echo ""
 echo "For the full methodology, read: METHODOLOGY.md"
 echo "For how Claude understands your vault: $VAULT_PATH/CLAUDE.md"

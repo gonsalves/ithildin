@@ -16,8 +16,7 @@ An open-source project at `/Users/rahul.gonsalves/Documents/ithildin/` with:
 | `README.md` | Quick start, prerequisites, how it works. |
 | `scaffold/templates/` | 7 Obsidian note templates (Daily, Fleeting, Permanent, Literature, Meeting, Project, Weekly Review). |
 | `scaffold/obsidian-config/` | 3 JSON config files (app.json, daily-notes.json, core-plugins.json). |
-| `tasks/process-daily-note.md` | Scheduled task prompt — structures raw daily notes at 9 PM. |
-| `tasks/morning-brain-digest.md` | Scheduled task prompt — generates digest, connections, gaps at 6 AM. |
+| `tasks/process-and-digest.md` | Combined scheduled task — processes daily notes then generates digest, connections, gaps. Runs at 6 AM and 9 PM. |
 
 ### Rahul's Personal Vault
 
@@ -27,9 +26,8 @@ At `/Users/rahul.gonsalves/Documents/echocortex/` — the live vault with:
 - 7 templates in `Templates/`
 - Templater, QuickAdd, Dataview community plugins installed
 - 3 Claude outputs already generated (Digest, Connections, Gaps for 2026-04-02)
-- 2 scheduled tasks running:
-  - `process-daily-note` at 9:03 PM daily
-  - `morning-brain-digest` at 6:03 AM daily
+- 1 scheduled task running:
+  - `process-and-digest` at 6 AM and 9 PM daily (processes notes, then generates digest/connections/gaps)
 
 ### Obsidian Settings Configured
 
@@ -47,15 +45,14 @@ At `/Users/rahul.gonsalves/Documents/echocortex/` — the live vault with:
 User writes messy daily notes throughout the day
          |
          v
-process-daily-note (9 PM) — reads via Obsidian CLI
+process-and-digest (6 AM + 9 PM) — reads via Obsidian CLI
+  Part 1: Process daily note
   - Structures the dump (tasks, events, ideas, references, people)
   - Links to existing vault notes with [[wikilinks]]
   - Asks clarifying questions inline
   - Extracts substantial ideas to 00 Inbox/ as fleeting notes
   - Sets processed: true in frontmatter
-         |
-         v
-morning-brain-digest (6 AM) — reads via Obsidian CLI
+  Part 2: Generate digest
   - Generates 80 Claude/Digests/Claude Digest YYYY-MM-DD.md
   - Generates 80 Claude/Connections/Connections YYYY-MM-DD.md
   - Generates 80 Claude/Gaps/Gaps YYYY-MM-DD.md
@@ -65,7 +62,7 @@ morning-brain-digest (6 AM) — reads via Obsidian CLI
 User reviews digest, answers questions, processes inbox
 ```
 
-Both tasks use the **Obsidian CLI** (`obsidian` command) — not direct filesystem access. Key commands: `daily:read`, `read`, `search`, `create`, `append`, `properties:set`, `tags`, `files`, `backlinks`, `links`, `orphans`, `unresolved`.
+Both parts use the **Obsidian CLI** (`obsidian` command) — not direct filesystem access. Key commands: `daily:read`, `read`, `search`, `create`, `append`, `properties:set`, `tags`, `files`, `backlinks`, `links`, `orphans`, `unresolved`.
 
 CLI quirk: outputs installer warnings that must be filtered with `grep -v "Loading\|out of date\|installer"`.
 
@@ -144,7 +141,7 @@ CLI quirk: outputs installer warnings that must be filtered with `grep -v "Loadi
 
 5. **Questions inline, not in separate notes** — Rahul preferred seeing Claude's questions right in the daily note.
 
-6. **Two separate scheduled tasks** — processing (evening) and analysis (morning) are decoupled. Either can run independently.
+6. **One combined task, twice daily** — processing and analysis run serially (process first, then digest). Runs at 6 AM and 9 PM for a morning review and end-of-day wrap-up.
 
 7. **No community plugin auto-installation** — Obsidian requires UI interaction for security. We print instructions instead.
 
@@ -158,8 +155,7 @@ CLI quirk: outputs installer warnings that must be filtered with `grep -v "Loadi
 |---|---|
 | Repo | `/Users/rahul.gonsalves/Documents/ithildin/` |
 | Live vault | `/Users/rahul.gonsalves/Documents/echocortex/` |
-| Process daily note task | `~/.claude/scheduled-tasks/process-daily-note/SKILL.md` |
-| Morning digest task | `~/.claude/scheduled-tasks/morning-brain-digest/SKILL.md` |
+| Process + digest task | `~/.claude/scheduled-tasks/process-and-digest/SKILL.md` |
 | Original system plan | `~/.claude/plans/humble-watching-wombat.md` (1000+ lines) |
 | Detailed methodology plan | `~/.claude/plans/humble-watching-wombat-agent-ad5971eb3bce4db9f.md` |
 | Claude memory | `~/.claude/projects/-Users-rahul-gonsalves-Documents-exec-acc/memory/` |
