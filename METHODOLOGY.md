@@ -1,4 +1,4 @@
-# Second Brain Methodology
+# Ithildin — Methodology
 
 A complete system for capturing, organising, and developing your knowledge using Obsidian and Claude.
 

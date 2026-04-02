@@ -1,6 +1,8 @@
-# Second Brain
+# Ithildin
 
-A complete "second brain" system built on Obsidian + Claude. Capture everything, let AI structure it, surface connections you'd miss.
+*Moon-letters that reveal hidden connections.*
+
+A complete second brain system built on Obsidian + Claude. Capture everything, let AI structure it, surface connections you'd miss.
 
 **One repo. One command. A working system.**
 
@@ -22,8 +24,8 @@ A complete "second brain" system built on Obsidian + Claude. Capture everything,
 ## Quick Start
 
 ```bash
-git clone https://github.com/rahulgonsalves/second-brain.git
-cd second-brain
+git clone https://github.com/rahulgonsalves/ithildin.git
+cd ithildin
 ./setup.sh ~/path/to/your/vault
 ```
 
@@ -109,7 +111,7 @@ You (weekly) reflect, develop notes, archive completed work
 ## Project Structure
 
 ```
-second-brain/
+ithildin/
 ├── README.md              # This file
 ├── METHODOLOGY.md         # The full system methodology
 ├── CLAUDE.md              # Gets copied to your vault root

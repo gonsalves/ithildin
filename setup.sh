@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # ============================================================
-# Second Brain — Setup Script
+# Ithildin — Setup Script
 # ============================================================
-# Sets up an Obsidian vault with the Second Brain system:
+# Sets up an Obsidian vault with the Ithildin system:
 #   - Folder structure (PARA-lite, 12 top-level folders)
 #   - Templates (7 note types)
 #   - Obsidian config (default locations, daily notes)
@@ -39,7 +39,7 @@ confirm() {
 # --- Step 1: Get vault path ---
 
 echo ""
-echo -e "${BOLD}Second Brain Setup${RESET}"
+echo -e "${BOLD}Ithildin Setup${RESET}"
 echo "=========================================="
 echo ""
 
@@ -274,7 +274,7 @@ install_task "morning-brain-digest"
 
 echo ""
 echo -e "${BOLD}=========================================="
-echo -e "  Second Brain setup complete!"
+echo -e "  Ithildin setup complete!"
 echo -e "==========================================${RESET}"
 echo ""
 echo -e "Your vault is ready at: ${BOLD}$VAULT_PATH${RESET}"

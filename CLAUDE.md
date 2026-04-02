@@ -1,6 +1,6 @@
-# Second Brain — Claude Code Context
+# Ithildin — Claude Code Context
 
-This vault uses a structured "second brain" system. When working in this vault, follow these conventions.
+This vault uses the Ithildin system — a structured second brain. When working in this vault, follow these conventions.
 
 ## Folder Structure
 - `00 Inbox/` — Everything lands here first. Process during daily review.
