@@ -24,7 +24,7 @@ A complete second brain system built on Obsidian + Claude. Capture everything, l
 ## Quick Start
 
 ```bash
-git clone https://github.com/rahulgonsalves/ithildin.git
+git clone https://github.com/gonsalves/ithildin.git
 cd ithildin
 ./setup.sh ~/path/to/your/vault
 ```
