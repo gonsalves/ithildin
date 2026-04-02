@@ -123,6 +123,8 @@ Scan the daily note for URLs (http:// or https:// links). Classify each URL, the
 | Domain is a retailer/manufacturer (amazon, steelcase, apple/shop, ikea, flipkart, etc.) | **Product** |
 | URL path contains `/product/`, `/products/`, `/shop/`, `/buy/`, `/dp/`, `/p/`, `/item/` | **Product** |
 | User tagged the link `#to-buy`, `#considering`, or wrote "want to buy" / "looking at" near it | **Product** |
+| Domain is an event/venue platform (urbanaut.app, lu.ma, eventbrite.com, insider.in, etc.) | **Event** |
+| URL is an app/digital product landing page, or links to TestFlight, App Store, or Play Store | **Product** |
 | Everything else (blogs, news, essays, personal sites) | **Article** |
 
 When ambiguous, default to **Article** (lighter processing, safer).
@@ -144,7 +146,7 @@ If this fails or returns empty/very short content (likely a paywall), try via ar
 readable -p title,excerpt,byline,text-content -q "https://archive.ph/newest/THE_URL" 2>&1 | grep -v "Warning:"
 ```
 
-If both fail, note it in the processed section as a link that couldn't be fetched.
+If both fail, use the WebFetch tool with the original URL as a fallback — fetch the page and extract the title, author, and as much article text as is available. If WebFetch also fails or returns only navigation/UI content with no article body, note it in the processed section as a link that couldn't be fetched and create a stub literature note with just the title and URL.
 
 **Create a Literature Note** in `50 Resources/`:
 ```bash
@@ -303,6 +305,52 @@ In the References section of the processed daily note:
 - If price isn't clearly available on the page, write "Price not listed" rather than guessing
 - Don't create separate notes for the alternatives — just list them in the table. If the user later wants to evaluate one, they'll add it to a daily note themselves
 - Tag with `product` plus a relevant `#topic/*` tag (e.g. `#topic/office-setup`, `#topic/audio`)
+
+### 6c. Event flow
+
+For URLs classified as events:
+
+Fetch the event page using the WebFetch tool (event platforms are usually JS-heavy SPAs that `readable` can't parse). Extract:
+- Event name
+- Date and time
+- Venue name and address
+- Organiser
+- Description / what it is
+- Any ticket/RSVP link
+
+**Create a fleeting note** in `00 Inbox/`:
+```bash
+obsidian create name="[Event Name] - [Month YYYY]" path="00 Inbox/" 2>&1 | grep -v "Loading\|out of date\|installer"
+```
+
+Write the content:
+```
+---
+type: fleeting
+created: [ISO timestamp]
+tags: [topic/events, topic/bengaluru]
+date: YYYY-MM-DD
+---
+
+# [Event Name]
+
+**When:** [Date, time]
+**Where:** [Venue, address]
+**Organiser:** [Name]
+
+[Description — what the event is, why it's interesting]
+
+**Source:** [URL]
+```
+
+**Link from the processed section:**
+```
+- [[Event Name - Month YYYY]] — [one-line description], [date]
+```
+
+If the event has a specific date, also surface it in the Questions section: *"[Event Name] is on [date] — worth attending?"*
+
+---
 
 ## 7. Extract fleeting notes
 
