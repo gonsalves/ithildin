@@ -20,13 +20,27 @@ This vault uses the Ithildin system — a structured second brain. When working 
 Every note MUST have YAML frontmatter with at minimum:
 ```yaml
 ---
-type: fleeting | permanent | literature | project | meeting | daily | review | claude
+type: fleeting | permanent | literature | product | project | meeting | daily | review | moc | claude
 created: ISO 8601 timestamp
 tags: []
 ---
 ```
 
 The `type` field is the most important metadata — it powers search, filtering, and automation.
+
+Additional frontmatter for `type: product`:
+```yaml
+product: "Product Name"
+manufacturer: "Brand"
+price: "₹XX,XXX"
+currency: INR
+category: "desk chair"
+url: "https://..."
+rating:           # 1-5, filled in by user (not Claude)
+status: considering  # considering → shortlisted → purchased → returned → passed
+```
+
+The product tracker MOC lives at `50 Resources/Products.md` — uses Dataview to auto-list all product notes.
 
 ## Tag Namespaces
 - `#status/seed`, `#status/growing`, `#status/evergreen`, `#status/dormant` — note lifecycle

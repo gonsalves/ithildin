@@ -328,6 +328,55 @@ merge_json_object "$OBSIDIAN_DIR/app.json" "$SCRIPT_DIR/scaffold/obsidian-config
 merge_json_object "$OBSIDIAN_DIR/daily-notes.json" "$SCRIPT_DIR/scaffold/obsidian-config/daily-notes.json"
 merge_json_array "$OBSIDIAN_DIR/core-plugins.json" "$SCRIPT_DIR/scaffold/obsidian-config/core-plugins.json"
 
+# --- Step 5b: Create starter MOCs ---
+
+info "Creating starter notes..."
+
+PRODUCTS_MOC="$VAULT_PATH/50 Resources/Products.md"
+if [[ ! -f "$PRODUCTS_MOC" ]]; then
+  cat > "$PRODUCTS_MOC" << 'MOEOF'
+---
+type: moc
+created: $(date +%Y-%m-%dT%H:%M:%S)
+tags: [moc, product]
+---
+# Products
+
+## Active Evaluations
+```dataview
+TABLE WITHOUT ID
+  file.link AS "Product",
+  manufacturer AS "Brand",
+  price AS "Price",
+  category AS "Category",
+  rating AS "Rating",
+  status AS "Status",
+  dateformat(file.cday, "yyyy-MM-dd") AS "Added"
+FROM "50 Resources"
+WHERE type = "product" AND status != "passed" AND status != "returned"
+SORT file.cday DESC
+```
+
+## All Products
+```dataview
+TABLE WITHOUT ID
+  file.link AS "Product",
+  manufacturer AS "Brand",
+  price AS "Price",
+  category AS "Category",
+  rating AS "Rating",
+  status AS "Status",
+  dateformat(file.cday, "yyyy-MM-dd") AS "Added"
+FROM "50 Resources"
+WHERE type = "product"
+SORT file.cday DESC
+```
+MOEOF
+  success "Created Products tracker (50 Resources/Products.md)"
+else
+  info "Products tracker already exists — skipped"
+fi
+
 # --- Step 6: Copy CLAUDE.md ---
 
 info "Setting up CLAUDE.md..."

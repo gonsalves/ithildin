@@ -104,12 +104,34 @@ obsidian daily:path 2>&1 | grep -v "Loading\|out of date\|installer"
 ```
 3. Write the complete content to that path.
 
-### 6. Fetch and save linked articles
+### 6. Process linked URLs
 
-Scan the daily note for URLs (http:// or https:// links). For each URL that looks like an article or blog post (skip obvious non-article URLs like Google Docs, GitHub repos, shopping product pages, or internal tools):
+Scan the daily note for URLs (http:// or https:// links). Classify each URL, then process accordingly.
 
-**Step 1: Extract the article text**
+**Always skip** these URL types — leave them as raw links in References:
+- Google Docs, Sheets, Slides (private/collaborative docs)
+- GitHub repos (code, not content — unless it's a `*.github.io` blog post)
+- Image URLs, PDF links, video links
+- Internal tools, dashboards, app links
 
+**Classify remaining URLs into:**
+
+| Signal | Classification |
+|---|---|
+| Domain is a retailer/manufacturer (amazon, steelcase, apple/shop, ikea, flipkart, etc.) | **Product** |
+| URL path contains `/product/`, `/products/`, `/shop/`, `/buy/`, `/dp/`, `/p/`, `/item/` | **Product** |
+| User tagged the link `#to-buy`, `#considering`, or wrote "want to buy" / "looking at" near it | **Product** |
+| Everything else (blogs, news, essays, personal sites) | **Article** |
+
+When ambiguous, default to **Article** (lighter processing, safer).
+
+---
+
+#### 6a. Article flow
+
+For URLs classified as articles:
+
+**Extract the article text:**
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 readable -p title,excerpt,byline,text-content -q "THE_URL" 2>&1 | grep -v "Warning:"
@@ -122,16 +144,14 @@ readable -p title,excerpt,byline,text-content -q "https://archive.ph/newest/THE_
 
 If both fail, note it in the processed section as a link that couldn't be fetched.
 
-**Step 2: Create a Literature Note**
-
-For each successfully fetched article, create a note in `50 Resources/`:
+**Create a Literature Note** in `50 Resources/`:
 ```bash
 obsidian create name="@ Author - Article Title" path="50 Resources/" 2>&1 | grep -v "Loading\|out of date\|installer"
 ```
 
 If author is unknown, use the publication name. If both unknown, use just the title.
 
-Then write the content:
+Write the content:
 ```
 ---
 type: literature
@@ -156,22 +176,131 @@ status: unread
 - Related to [[existing notes if obvious]]
 ```
 
-Use `obsidian append file="Note Name" content="..."` to write it.
-
-**Step 3: Link from the processed section**
-
-In the References section of the processed daily note, replace the raw URL with a link to the new Literature Note:
+**Link from the processed section:**
 ```
-- [[@ Author - Article Title]] — [one-line description of what the article is about]
+- [[@ Author - Article Title]] — [one-line description]
 ```
 
-**Rules for article fetching:**
-- Skip Google Docs, Sheets, Slides links (these are private/collaborative docs, not articles)
-- Skip GitHub links (code repos, not articles — unless it's a blog post on github.io)
-- Skip shopping/product links (Steelcase chairs, Amazon, etc.) — leave these as raw URLs in References
-- Skip image URLs, PDF links, and video links
-- If the article is very long (>5000 words), still save the full text but note the word count in the summary
-- Tag articles with relevant topic tags based on their content
+---
+
+#### 6b. Product flow
+
+For URLs classified as products:
+
+**Step 1: Fetch the product page**
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+readable -p title,excerpt,text-content -q "THE_URL" 2>&1 | grep -v "Warning:"
+```
+
+Extract from the page: product name, manufacturer/brand, price, a short description, and key specs.
+
+**Step 2: Search for reviews**
+
+Use WebSearch to find trusted reviews. Search for:
+```
+"Product Name" review site:wirecutter.com OR site:rtings.com OR site:reddit.com
+```
+
+Then fetch the top 2-3 results using `readable` and extract:
+- The reviewer's verdict (1-2 sentences)
+- Rating if available
+- Key pros and cons mentioned
+
+Prioritise these sources (in order):
+1. **Wirecutter** (NYT) — authoritative, structured
+2. **RTINGS** — data-heavy, great for electronics/furniture/monitors
+3. **Reddit** — real user opinions (r/BuyItForLife, category-specific subs)
+4. **The Verge / Tom's Hardware** — good for tech products
+
+Don't fetch full review text — just verdicts, ratings, and key points. These are copyrighted and go stale.
+
+**Step 3: Search for top alternatives**
+
+Search for:
+```
+best alternatives to "Product Name" OR "Product Name" vs
+```
+
+Identify the **top 2 alternatives** that reviewers consistently recommend in the same category and price range. For each alternative, note:
+- Product name and manufacturer
+- Price (approximate)
+- One-line key difference from the original product ("better lumbar support but less adjustable arms")
+
+**Only include alternatives that make sense** — if the product is niche or the search doesn't surface clear competitors, skip this section rather than forcing bad recommendations.
+
+**Step 4: Create a Product Note** in `50 Resources/`:
+```bash
+obsidian create name="Product Name" path="50 Resources/" 2>&1 | grep -v "Loading\|out of date\|installer"
+```
+
+Write the content:
+```
+---
+type: product
+created: [ISO timestamp]
+product: "Product Name"
+manufacturer: "Brand"
+price: "₹XX,XXX"
+currency: INR
+category: "e.g. desk chair, headphones, software"
+url: "THE_URL"
+rating:
+status: considering
+tags: [product, topic/relevant-tag]
+---
+# Product Name
+
+## Overview
+[2-3 sentences: what it is, who it's for, why it's notable]
+
+## Specs
+- **Price:** ₹XX,XXX
+- **Manufacturer:** Brand
+- **Category:** e.g. desk chair
+
+[Additional key specs extracted from the product page]
+
+## Reviews
+### [Source 1 — e.g. Wirecutter]
+[Verdict summary, rating, key point. Link to full review.]
+
+### [Source 2 — e.g. Reddit]
+[Summary of user sentiment. Link to thread.]
+
+## Alternatives
+| Product | Price | Key Difference |
+|---|---|---|
+| [Alt 1 name] | ₹XX,XXX | [one-line differentiator] |
+| [Alt 2 name] | ₹XX,XXX | [one-line differentiator] |
+
+(Only include if genuine alternatives were found. Skip this section rather than padding it.)
+
+## Pros & Cons
+| Pros | Cons |
+|---|---|
+| [from reviews] | [from reviews] |
+
+## My Notes
+[Empty — for the user to fill in later]
+
+## Connections
+- Found via [[10 Daily/YYYY-MM-DD]]
+```
+
+**Step 5: Link from the processed section**
+
+In the References section of the processed daily note:
+```
+- [[Product Name]] — [category], [price] — considering
+```
+
+**Rules for products:**
+- Use INR (₹) as default currency; convert if the product page shows a different currency
+- Leave the `rating` field empty — that's for the user to fill in after evaluation
+- If price isn't clearly available on the page, write "Price not listed" rather than guessing
+- Don't create separate notes for the alternatives — just list them in the table. If the user later wants to evaluate one, they'll add it to a daily note themselves
+- Tag with `product` plus a relevant `#topic/*` tag (e.g. `#topic/office-setup`, `#topic/audio`)
 
 ### 7. Extract fleeting notes
 
