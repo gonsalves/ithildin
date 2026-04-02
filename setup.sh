@@ -313,7 +313,12 @@ merge_json_array() {
   local target="$1"
   local source="$2"
   if [[ -f "$target" ]] && [[ "$HAS_JQ" == "true" ]]; then
-    jq -s '.[0] + .[1] | unique' "$target" "$source" > "$target.tmp"
+    # Handle existing file being either an array or an object (Obsidian uses both formats)
+    jq -s '
+      (if .[0] | type == "array" then .[0] else [.[0] | keys[]] end) +
+      (if .[1] | type == "array" then .[1] else [.[1] | keys[]] end) |
+      unique
+    ' "$target" "$source" > "$target.tmp"
     mv "$target.tmp" "$target"
     success "Merged $(basename "$target") (union of plugins)"
   elif [[ -f "$target" ]]; then
