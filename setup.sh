@@ -327,6 +327,55 @@ merge_json_array() {
 merge_json_object "$OBSIDIAN_DIR/app.json" "$SCRIPT_DIR/scaffold/obsidian-config/app.json"
 merge_json_object "$OBSIDIAN_DIR/daily-notes.json" "$SCRIPT_DIR/scaffold/obsidian-config/daily-notes.json"
 merge_json_array "$OBSIDIAN_DIR/core-plugins.json" "$SCRIPT_DIR/scaffold/obsidian-config/core-plugins.json"
+merge_json_array "$OBSIDIAN_DIR/community-plugins.json" "$SCRIPT_DIR/scaffold/obsidian-config/community-plugins.json"
+
+# --- Step 5a: Install community plugins ---
+
+info "Installing community plugins..."
+
+install_community_plugin() {
+  local plugin_id="$1"
+  local github_repo="$2"
+  local plugin_dir="$OBSIDIAN_DIR/plugins/$plugin_id"
+
+  if [[ -d "$plugin_dir" ]]; then
+    info "Plugin '$plugin_id' already installed — skipping"
+    return 0
+  fi
+
+  mkdir -p "$plugin_dir"
+  local base_url="https://github.com/$github_repo/releases/latest/download"
+
+  for file in main.js manifest.json styles.css; do
+    curl -fsSL -o "$plugin_dir/$file" "$base_url/$file" 2>/dev/null || rm -f "$plugin_dir/$file"
+  done
+
+  if [[ -f "$plugin_dir/main.js" && -f "$plugin_dir/manifest.json" ]]; then
+    success "Installed plugin: $plugin_id"
+  else
+    error "Failed to download plugin: $plugin_id (check your internet connection)"
+    rm -rf "$plugin_dir"
+    return 1
+  fi
+}
+
+install_community_plugin "templater-obsidian" "SilentVoid13/Templater"
+install_community_plugin "quickadd" "chhoumann/quickadd"
+install_community_plugin "dataview" "blacksmithgu/obsidian-dataview"
+
+# Configure Templater defaults
+TEMPLATER_DIR="$OBSIDIAN_DIR/plugins/templater-obsidian"
+if [[ -d "$TEMPLATER_DIR" && ! -f "$TEMPLATER_DIR/data.json" ]]; then
+  cat > "$TEMPLATER_DIR/data.json" << 'TEOF'
+{
+  "templates_folder": "Templates",
+  "trigger_on_file_creation": true
+}
+TEOF
+  success "Configured Templater (template folder + trigger on new file)"
+elif [[ -f "$TEMPLATER_DIR/data.json" ]]; then
+  info "Templater already configured — skipping"
+fi
 
 # --- Step 5b: Create starter MOCs ---
 
@@ -440,22 +489,14 @@ echo ""
 echo -e "${BOLD}NEXT STEPS:${RESET}"
 echo ""
 echo "1. Open your vault in Obsidian (or restart it if already open)"
+echo "   Community plugins (Templater, QuickAdd, Dataview) are already installed."
 echo ""
-echo "2. Install these community plugins (Settings > Community Plugins > Browse):"
-echo "   - Templater         (by SilentVoid13)        — dynamic templates"
-echo "   - QuickAdd          (by Christian Houmann)    — rapid capture"
-echo "   - Dataview          (by Michael Brenan)       — query your notes"
-echo ""
-echo "3. Configure Templater:"
-echo "   Settings > Templater > Template folder location: Templates"
-echo "   Settings > Templater > Trigger Templater on new file creation: ON"
-echo ""
-echo "4. Activate the scheduled Claude Code tasks:"
+echo "2. Activate the scheduled Claude Code tasks:"
 echo "   Open Claude Code and run:"
 echo "     /schedule process-daily-note --cron '0 21 * * *'"
 echo "     /schedule morning-brain-digest --cron '0 6 * * *'"
 echo ""
-echo "5. Start capturing! Open today's daily note and dump whatever's on your mind."
+echo "3. Start capturing! Open today's daily note and dump whatever's on your mind."
 echo "   Claude will structure it at 9 PM and deliver a digest at 6 AM."
 echo ""
 echo "For the full methodology, read: METHODOLOGY.md"

@@ -38,10 +38,11 @@ The setup script will:
 1. Create the folder structure (19 folders, all idempotent)
 2. Copy 7 note templates
 3. Configure Obsidian settings (merges with existing config, never overwrites)
-4. Install Claude Code scheduled task definitions
-5. Copy CLAUDE.md to your vault root
+4. Install community plugins (Templater, QuickAdd, Dataview) and configure Templater
+5. Install Claude Code scheduled task definitions
+6. Copy CLAUDE.md to your vault root
 
-Then follow the printed next steps to install community plugins and activate the scheduled tasks.
+Then follow the printed next steps to activate the scheduled tasks.
 
 ## The System
 
@@ -58,7 +59,7 @@ Read the full methodology: [METHODOLOGY.md](METHODOLOGY.md)
 
 ## Community Plugins
 
-After running setup, install these three plugins in Obsidian (Settings > Community Plugins > Browse):
+The setup script automatically installs and configures these plugins:
 
 | Plugin | Author | Purpose |
 |---|---|---|
@@ -66,9 +67,7 @@ After running setup, install these three plugins in Obsidian (Settings > Communi
 | **QuickAdd** | Christian Houmann | Rapid capture with hotkeys |
 | **Dataview** | Michael Brenan | Query your notes like a database |
 
-After installing Templater, set:
-- Template folder location: `Templates`
-- Trigger Templater on new file creation: **ON**
+Templater is pre-configured with the correct template folder and trigger-on-new-file setting.
 
 ## Scheduled Tasks
 
